@@ -48,25 +48,43 @@ order.post('/', (req, res, next) => {
 
   console.log(`Handling request ${date.white}: ${JSON.stringify(req.body)}`)
 
-  if(req.ip !== "::ffff:10.0.35.69" && req.ip !== "::ffff:10.0.34.192") {
+  // IP check
+  if(req.ip !== "::ffff:10.0.34.252" && req.ip !== "::ffff:10.0.35.69" && req.ip !== "::ffff:10.0.34.192") {
     console.log(`got request from ${req.ip}`.magenta);
 
     notifier.notify({
       'title': '!!!!',
       'message': req.body.content
     });
-    res.rend();
-    return;
-  }
-
-
-  var total = 0;
-
-  if(req.body.prices.length !== req.body.quantities.length) {
-    console.log('Prices have diffrent length than quantities'.red, req.body);
+    res.send({
+      ignored: true
+    });
     res.end();
     return;
   }
+
+  // check for prices and quantities
+  if(!req.body.prices || !req.body.quantities) {
+    console.log('had no prices or quantities');
+    res.send({
+      ignored: true
+    });
+    res.end();
+    return;
+  }
+
+  // check array lengths
+  if(req.body.prices.length !== req.body.quantities.length) {
+    console.log('Prices have diffrent length than quantities'.red, req.body);
+    res.send({
+      ignored: true
+    });
+    res.end();
+    return;
+  }
+
+  // sum up
+  let total = 0;
 
   for(let i = 0; i < req.body.prices.length; i++) {
     let price = req.body.prices[i];
@@ -77,20 +95,28 @@ order.post('/', (req, res, next) => {
 
   console.log('total', total);
 
+  // calc the taxes
   let tax = taxes[req.body.country];
 
   if(!tax) {
-    console.log('Couldn\'t find tax for county'.red, request.body.country);
+    console.log('Couldn\'t find tax for county'.red, req.body.country);
+    res.send({
+      ignored: true
+    });
     res.end();
     return;
   }
 
-  total = total * (1 + tax);
+  let totalWithTaxes = total * (1 + tax);
 
-  console.log('after tax', 1 + tax, total);
+  console.log('after tax', 1 + tax, totalWithTaxes);
+
+  // Do the reduction
   let reduction = 1;
 
-  if(req.body.reduction === "STANDARD") {
+  if(!req.body.reduction || req.body.reduction === "") {
+    reduction = 1;
+  } else if(req.body.reduction === "STANDARD") {
 
     if(total >= 50000) {
       reduction = 0.85
@@ -106,11 +132,18 @@ order.post('/', (req, res, next) => {
       reduction = 1;
     }
 
-    total = total * reduction;
-
+  } else {
+    console.log(`Unknown reduction ${req.body.reduction}`)
+    res.send({
+      ignored: true
+    });
+    res.end();
+    return;
   }
 
-  let rounded = parseFloat(total.toFixed(2));
+  let totalReduced = totalWithTaxes * reduction;
+
+  let rounded = parseFloat(totalReduced.toFixed(2));
 
   console.log('after reduction', req.body.reduction, reduction, rounded);
 
