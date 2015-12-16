@@ -10,7 +10,7 @@ npm i
 npm run server
 ```
 
-Head over to [http://localhost:3000/]
+Head over to (http://localhost:3000/)
 
 ## Switch port
 
