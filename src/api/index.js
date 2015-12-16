@@ -1,11 +1,23 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import colors from 'colors';
 
-import test from './test';
+import feedback from './feedback';
+import order from './order';
 
+const port = process.env.PORT || 3001;
 const app = express();
 
-app.use(bodyParser.json());
-app.use('/test', test);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+})
 
-export default app;
+app.use(bodyParser.json());
+app.use('/feedback', feedback);
+app.use('/order', order);
+
+console.log(`API Server is listening on 0.0.0.0:${port.toString().red}`.green);
+
+app.listen(port);
