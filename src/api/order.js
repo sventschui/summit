@@ -73,9 +73,6 @@ order.post('/', (req, res, next) => {
     let quantity = req.body.quantities[i];
 
     total += price * quantity;
-
-    console.log(i, price, quantity, price * quantity);
-
   }
 
   console.log('total', total);
@@ -113,11 +110,13 @@ order.post('/', (req, res, next) => {
 
   }
 
-  console.log('after reduction', req.body.reduction, reduction, total);
+  let rounded = parseFloat(total.toFixed(2));
+
+  console.log('after reduction', req.body.reduction, reduction, rounded);
 
   res.send({
     'ignored': false,
-    'total': Math.round(total*100)/100,
+    'total': rounded,
   });
 
   next();
