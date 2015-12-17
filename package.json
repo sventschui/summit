@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "./node_modules/.bin/babel-node src/api/index.js",
     "dev": "PORT=3001 nodemon --watch src/api --exec npm run server",
-    "prod": "PORT=3000 nodemon --watch src/api --exec npm run server"
+    "prod": "PORT=3000 npm run server",
+    "prod-watch": "nodemon --watch src/api --exec npm run prod"
   },
   "author": "",
   "license": "ISC",
