@@ -7,7 +7,7 @@
     "start": "npm run server",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "./node_modules/.bin/babel-node src/api/index.js",
-    "dev": "PORT=3001 npm run server",
+    "dev": "PORT=3001 nodemon --exec npm run server",
     "watch": "PORT=3000 nodemon --exec npm run server"
   },
   "author": "",
