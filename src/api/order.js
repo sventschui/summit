@@ -3,6 +3,18 @@ import notifier from 'node-notifier';
 
 const order = express();
 
+const vouch = {
+  "Drinks": 10,
+  "Fishing": 50,
+  "Weapons": 100,
+  "Phones": 100,
+  "Computers": 200,
+  "Cars": 1000,
+  "Planes": 20000,
+  "Houses": 20000,
+  "Boats": 20000,
+};
+
 const taxes = {
   "DE": 0.20,
   "UK": 0.21,
@@ -44,6 +56,10 @@ const reductions = {
 
 order.post('/', (req, res, next) => {
 
+  res.status(204);
+  res.end();
+  return;
+
   let date = new Date().toString();
 
   console.log(`Handling request ${date.white}: ${JSON.stringify(req.body)}`)
@@ -74,7 +90,7 @@ order.post('/', (req, res, next) => {
   }
 
   // check array lengths
-  if(req.body.prices.length !== req.body.quantities.length) {
+  if(req.body.prices.length !== req.body.quantities.length || eq.body.prices.length !== req.body.volumes.length) {
     console.log('Prices have diffrent length than quantities'.red, req.body);
     res.send({
       ignored: true
@@ -135,6 +151,8 @@ order.post('/', (req, res, next) => {
       reduction = 1;
     }
 
+  } else if(req.body.reduction === "HALF PRICE") {
+    reduction = 0.5;
   } else {
     console.log(`Unknown reduction ${req.body.reduction}`)
     res.send({
@@ -150,12 +168,73 @@ order.post('/', (req, res, next) => {
 
   console.log('after reduction', req.body.reduction, reduction, rounded);
 
-  res.send({
-    'ignored': false,
-    'total': rounded,
-  });
+  // boxes
+  if(req.body.vip) {
+    let boxes = [];
 
-  next();
+    let totalVolume = 0;
+
+    for(let i = 0; i < req.body.volumes.length; i++) {
+      let volume = req.body.volumes[i];
+      let quantity = req.body.quantities[i];
+      let article = req.body.names[i];
+      let found = false;
+
+      for(let j = 0; j < quantity; j++) {
+
+        let foundBox = boxes.find((box) => {
+          if(box.currentSize + volume <= 5) {
+            return true;
+          }
+        });
+
+        if(foundBox) {
+          foundBox.items.push(name);
+          foundBox.currentSize += volume;
+        } else {
+          let newBox = {
+            items: [ name ],
+            currentSize: volume,
+          }
+        }
+      }
+
+      totalVolume += volume * quantity;
+    }
+
+
+
+
+  }
+
+  // categories
+  let categories = [];
+
+  // vouchers
+  let voucher = undefined;
+
+  // licenses
+  request.get('http://10.0.34.92/licenses')
+    .end((err, data) => {
+      let licenses = [];
+
+      data.forEach((license) => {
+
+        if(license.country == req.body.country && categories.contains(license.category)) {
+          licenses.add(license.license);
+        }
+      })
+
+      res.send({
+        'ignored': false,
+        'total': rounded,
+        'voucher': voucher,
+        'licenses': licenses,
+      });
+
+      next();
+    })
+
 });
 
 export default order;
