@@ -349,6 +349,8 @@ order.post('/', (req, res, next) => {
       reduction = 1;
     }
 
+  } else if(req.body.reduction === "PAY THE PRICE") {
+    reduction = 1;
   } else if(req.body.reduction === "HALF PRICE") {
     reduction = 0.5;
   } else {
@@ -394,14 +396,14 @@ order.post('/', (req, res, next) => {
   }
 
   // vouchers
-  let foundVouchers = vouch.some((voucher) => {
-    return categories.indexOf(voucher.category) !== -1;
+  let foundVouchers = vouch.filter((voucher) => {
+    return !!categories.find((cat) => { return cat.category == voucher.category; });
   });
 
   let voucher = 0;
 
-  if(foundVouchers) {
-    voucher = Math.max.apply(null, [0].concat(tmp.map((voucher) => {
+  if(foundVouchers && foundVouchers.length) {
+    voucher = Math.max.apply(null, [0].concat(foundVouchers.map((voucher) => {
       return voucher.amount;
     })));
   }
@@ -410,10 +412,7 @@ order.post('/', (req, res, next) => {
   let licenses = [];
 
   lic.forEach((license) => {
-    console.log(license, req.body.country, categories);
-    console.log(categories.find((cat) => { return cat.category == license.category; }));
     if(license.country == req.body.country && categories.find((cat) => { return cat.category == license.category; })) {
-      console.log('yes');
       licenses.push(license.license);
     }
   })
