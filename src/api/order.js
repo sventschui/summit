@@ -3,17 +3,219 @@ import notifier from 'node-notifier';
 
 const order = express();
 
-const vouch = {
-  "Drinks": 10,
-  "Fishing": 50,
-  "Weapons": 100,
-  "Phones": 100,
-  "Computers": 200,
-  "Cars": 1000,
-  "Planes": 20000,
-  "Houses": 20000,
-  "Boats": 20000,
-};
+const lic = [
+  {
+    "category": "Weapons",
+    "country": "FR",
+    "license": "HUNTING"
+  },
+  {
+    "category": "Weapons",
+    "country": "UK",
+    "license": "HUNTING"
+  },
+  {
+    "category": "Alcohol",
+    "country": "UK",
+    "license": "OLDER_THAN_21"
+  },
+  {
+    "category": "Alcohol",
+    "country": "DE",
+    "license": "OLDER_THAN_21"
+  },
+  {
+    "category": "Fishing",
+    "country": "CZ",
+    "license": "FISHING"
+  },
+  {
+    "category": "Fishing",
+    "country": "US",
+    "license": "FISHING"
+  },
+  {
+    "category": "Fishing",
+    "country": "XE",
+    "license": "FISHING"
+  }
+];
+
+const cats = [
+  {
+    "name": "Shirt",
+    "category": "Clothes"
+  },
+  {
+    "name": "Trouser",
+    "category": "Clothes"
+  },
+  {
+    "name": "Jean",
+    "category": "Clothes"
+  },
+  {
+    "name": "Glove",
+    "category": "Clothes"
+  },
+  {
+    "name": "Socks",
+    "category": "Clothes"
+  },
+  {
+    "name": "Shoe",
+    "category": "Clothes"
+  },
+  {
+    "name": "Coat",
+    "category": "Clothes"
+  },
+  {
+    "name": "Jacket",
+    "category": "Clothes"
+  },
+  {
+    "name": "Pyjama",
+    "category": "Clothes"
+  },
+  {
+    "name": "Beret",
+    "category": "Clothes"
+  },
+  {
+    "name": "Hat",
+    "category": "Clothes"
+  },
+  {
+    "name": "Spacesuit for elephant",
+    "category": "Clothes"
+  },
+  {
+    "name": "Water gun",
+    "category": "Weapons"
+  },
+  {
+    "name": "Wooden sword",
+    "category": "Weapons"
+  },
+  {
+    "name": "Stinking cheese",
+    "category": "Weapons"
+  },
+  {
+    "name": "Dalek",
+    "category": "Weapons"
+  },
+  {
+    "name": "Laser saber",
+    "category": "Weapons"
+  },
+  {
+    "name": "Death Star",
+    "category": "Weapons"
+  },
+  {
+    "name": "Cheese",
+    "category": "Food"
+  },
+  {
+    "name": "Candy",
+    "category": "Food"
+  },
+  {
+    "name": "Paella",
+    "category": "Food"
+  },
+  {
+    "name": "Tomato",
+    "category": "Vegetables"
+  },
+  {
+    "name": "Cucumber",
+    "category": "Vegetables"
+  },
+  {
+    "name": "Carrot",
+    "category": "Vegetables"
+  },
+  {
+    "name": "Tomato juice",
+    "category": "Drinks"
+  },
+  {
+    "name": "Apple juice",
+    "category": "Drinks"
+  },
+  {
+    "name": "Diet coke",
+    "category": "Drinks"
+  },
+  {
+    "name": "Water",
+    "category": "Drinks"
+  },
+  {
+    "name": "Coffee",
+    "category": "Drinks"
+  },
+  {
+    "name": "Tea",
+    "category": "Drinks"
+  },
+  {
+    "name": "Wine",
+    "category": "Alcohol"
+  },
+  {
+    "name": "Beer",
+    "category": "Alcohol"
+  },
+  {
+    "name": "Whisky",
+    "category": "Alcohol"
+  },
+  {
+    "name": "Fishing rod",
+    "category": "Fishing"
+  },
+  {
+    "name": "Worms",
+    "category": "Fishing"
+  },
+  {
+    "name": "Net",
+    "category": "Fishing"
+  }
+]
+
+const vouch = [{
+  category: "Drinks",
+  amount: 10,
+},{
+  category: "Fishing",
+  amount: 50,
+},{
+  category: "Weapons",
+  amount: 100,
+},{
+  category: "Phones",
+  amount: 100,
+},{
+  category: "Computers",
+  amount: 200,
+},{
+  category: "Cars",
+  amount: 1000,
+},{
+  category: "Planes",
+  amount: 20000,
+},{
+  category: "Houses",
+  amount: 20000,
+},{
+  category: "Boats",
+  amount: 20000,
+}];
 
 const taxes = {
   "DE": 0.20,
@@ -56,16 +258,12 @@ const reductions = {
 
 order.post('/', (req, res, next) => {
 
-  res.status(204);
-  res.end();
-  return;
-
   let date = new Date().toString();
 
   console.log(`Handling request ${date.white}: ${JSON.stringify(req.body)}`)
 
   // IP check
-  if(req.ip !== "::ffff:10.0.34.252" && req.ip !== "::ffff:10.0.35.69" && req.ip !== "::ffff:10.0.34.192") {
+  /*if(req.ip !== "::ffff:10.0.34.252" && req.ip !== "::ffff:10.0.35.69" && req.ip !== "::ffff:10.0.34.192") {
     console.log(`got request from ${req.ip}`.magenta);
 
     notifier.notify({
@@ -77,7 +275,7 @@ order.post('/', (req, res, next) => {
     });
     res.end();
     return;
-  }
+  }*/
 
   // check for prices and quantities
   if(!req.body.prices || !req.body.quantities) {
@@ -90,14 +288,14 @@ order.post('/', (req, res, next) => {
   }
 
   // check array lengths
-  if(req.body.prices.length !== req.body.quantities.length || eq.body.prices.length !== req.body.volumes.length) {
+  /*if(req.body.prices.length !== req.body.quantities.length || req.body.prices.length !== req.body.volumes.length) {
     console.log('Prices have diffrent length than quantities'.red, req.body);
     res.send({
       ignored: true
     });
     res.end();
     return;
-  }
+  }*/
 
   // sum up
   let total = 0;
@@ -170,70 +368,64 @@ order.post('/', (req, res, next) => {
 
   // boxes
   if(req.body.vip) {
-    let boxes = [];
-
-    let totalVolume = 0;
-
-    for(let i = 0; i < req.body.volumes.length; i++) {
-      let volume = req.body.volumes[i];
-      let quantity = req.body.quantities[i];
-      let article = req.body.names[i];
-      let found = false;
-
-      for(let j = 0; j < quantity; j++) {
-
-        let foundBox = boxes.find((box) => {
-          if(box.currentSize + volume <= 5) {
-            return true;
-          }
-        });
-
-        if(foundBox) {
-          foundBox.items.push(name);
-          foundBox.currentSize += volume;
-        } else {
-          let newBox = {
-            items: [ name ],
-            currentSize: volume,
-          }
-        }
-      }
-
-      totalVolume += volume * quantity;
-    }
-
-
-
-
+    console.log('ignoring vip')
+    res.status(204);
+    res.end();
+    return;
   }
 
   // categories
   let categories = [];
 
+  for(let i = 0; i < req.body.names.length; i++) {
+    let article = req.body.names[i];
+    let category = cats.find((itemCat) => {
+      return itemCat.name === article;
+    });
+
+    if(!category) {
+      console.log('found no cat for', article)
+      res.status(204);
+      res.end();
+      return;
+    }
+
+    categories.push(category);
+  }
+
   // vouchers
-  let voucher = undefined;
+  let foundVouchers = vouch.some((voucher) => {
+    return categories.indexOf(voucher.category) !== -1;
+  });
+
+  let voucher = 0;
+
+  if(foundVouchers) {
+    voucher = Math.max.apply(null, [0].concat(tmp.map((voucher) => {
+      return voucher.amount;
+    })));
+  }
 
   // licenses
-  request.get('http://10.0.34.92/licenses')
-    .end((err, data) => {
-      let licenses = [];
+  let licenses = [];
 
-      data.forEach((license) => {
+  lic.forEach((license) => {
+    console.log(license, req.body.country, categories);
+    console.log(categories.find((cat) => { return cat.category == license.category; }));
+    if(license.country == req.body.country && categories.find((cat) => { return cat.category == license.category; })) {
+      console.log('yes');
+      licenses.push(license.license);
+    }
+  })
 
-        if(license.country == req.body.country && categories.contains(license.category)) {
-          licenses.add(license.license);
-        }
-      })
+  res.send({
+    'ignored': false,
+    'total': rounded,
+    'voucher': voucher,
+    'licenses': licenses,
+  });
 
-      res.send({
-        'ignored': false,
-        'total': rounded,
-        'voucher': voucher,
-        'licenses': licenses,
-      });
-
-      next();
-    })
+  next();
 
 });
 
