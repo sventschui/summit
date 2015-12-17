@@ -114,19 +114,22 @@ order.post('/', (req, res, next) => {
   // Do the reduction
   let reduction = 1;
 
+
   if(!req.body.reduction || req.body.reduction === "") {
     reduction = 1;
   } else if(req.body.reduction === "STANDARD") {
 
-    if(total >= 50000) {
+    console.log('reducing')
+
+    if(totalWithTaxes >= 50000) {
       reduction = 0.85
-    } else if(total >= 10000) {
+    } else if(totalWithTaxes >= 10000) {
       reduction = 0.9
-    } else if(total >= 7000) {
+    } else if(totalWithTaxes >= 7000) {
       reduction = 0.93
-    } else if(total >= 5000) {
+    } else if(totalWithTaxes >= 5000) {
       reduction = 0.95
-    } else if(total >= 1000) {
+    } else if(totalWithTaxes >= 1000) {
       reduction = 0.97
     } else {
       reduction = 1;
