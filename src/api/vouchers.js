@@ -21,4 +21,20 @@ vouchers.get('/', (req, res) => {
   res.end();
 });
 
+vouchers.get('/:cat', (req, res) => {
+  const cat = req.params.cat;
+  const voucher = vouch[cat];
+
+  if(!voucher) {
+    res.status(404);
+    res.end();
+    return;
+  }
+
+  res.send({
+    category: cat,
+    amount: vouch[cat],
+  });
+})
+
 export default vouchers;
