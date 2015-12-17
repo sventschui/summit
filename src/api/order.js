@@ -1,5 +1,6 @@
 import express from 'express';
 import notifier from 'node-notifier';
+import request from 'superagent';
 
 const order = express();
 
@@ -368,14 +369,6 @@ order.post('/', (req, res, next) => {
 
   console.log('after reduction', req.body.reduction, reduction, rounded);
 
-  // boxes
-  if(req.body.vip) {
-    console.log('ignoring vip')
-    res.status(204);
-    res.end();
-    return;
-  }
-
   // categories
   let categories = [];
 
@@ -417,14 +410,44 @@ order.post('/', (req, res, next) => {
     }
   })
 
-  res.send({
-    'ignored': false,
-    'total': rounded,
-    'voucher': voucher,
-    'licenses': licenses,
-  });
+  // boxes
+  if(req.body.vip) {
+    console.log('Skipping vip');
+    res.status(204);
+    res.end();
+    return;
 
-  next();
+    request.post('http://10.0.34.179:3000/bin-packing')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify(req.body))
+      .end((err, packRes) => {
+        if(err || !packRes) {
+          res.status(204);
+          res.end();
+          return;
+        }
+
+        console.log('pack response', err, packRes.body);
+
+        res.send({
+          'ignored': false,
+          'total': rounded,
+          'voucher': voucher,
+          'licenses': licenses,
+          'boxes': packRes.body.boxes,
+        });
+
+        next();
+      })
+  } else {
+    res.send({
+      'ignored': false,
+      'total': rounded,
+      'voucher': voucher,
+      'licenses': licenses,
+    });
+    next();
+  }
 
 });
 
